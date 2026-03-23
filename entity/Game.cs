@@ -8,8 +8,9 @@ namespace entity
         private int DEFAULT_WIDTH { get; set; } = 9;
         private int DEFAULT_HEIGTH { get; set; } = 9;
         private int DEFAULT_NB_PLAYER { get; } = 2;
-        private int[][] matrix { get; set; }
-        private Joueur[] joueurs { get; set; } = new Joueur[2];
+        public int[][] matrix { get; set; }
+        private bool[][] colored;
+        private Player[] joueurs { get; set; } = new Player[2];
         private int[] scores { get; }
         private int indexPlayer { get; set; } = 0;
         private List<Point[]> points;
@@ -20,7 +21,7 @@ namespace entity
             { -1,  1 },  // HautDroite
         };
 
-        public Game(Joueur[] ls, int w, int h)
+        public Game(Player[] ls, int w, int h)
         {
             joueurs[0] = ls[0];
             joueurs[1] = ls[1];
@@ -30,9 +31,11 @@ namespace entity
             for (int i = 0; i < h; i++)
             {
                 matrix[i] = new int[w];
+                colored[i] = new bool[w];
                 for (int j = 0; j < w; j++)
                 {
                     matrix[i][j] = -1;
+                    colored[i][j] = false;
                 }
             }
         }
@@ -81,7 +84,7 @@ namespace entity
             int NextX = 0, NextY = 0;
             p.X = PosX;
             p.Y = PosY;
-            while (isSecure(PosX, PosY)){
+            while (isSecure(p.X, p.Y) && ! colored[p.Y][p.X]){
                 NextX = p.X + PlusX;
                 NextY = p.Y + PlusY;
                 if (!isSecure(NextX, NextY) || !isSamePlayerPoint(p.X, p.Y, NextX, NextY)){
