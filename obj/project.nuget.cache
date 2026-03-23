@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "LefMdozgBrSKIhqigTVnRuqBVFe7Ook7T1S37WEsWMZA6GDWs+GRqVUhgmZpxDWfW7mq5T6a/wPiwbSDfpFAZw==",
+  "success": true,
+  "projectFilePath": "/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/Jeu de point.csproj",
+  "expectedPackageFiles": [
+    "/home/itu/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "/home/itu/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.0/microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
+    "/home/itu/.nuget/packages/npgsql/10.0.2/npgsql.10.0.2.nupkg.sha512",
+    "/home/itu/.nuget/packages/system.diagnostics.diagnosticsource/9.0.11/system.diagnostics.diagnosticsource.9.0.11.nupkg.sha512"
+  ],
+  "logs": []
+}

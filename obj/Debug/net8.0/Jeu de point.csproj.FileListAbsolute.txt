@@ -1,0 +1,34 @@
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.GeneratedMSBuildEditorConfig.editorconfig
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.AssemblyInfoInputs.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.AssemblyInfo.cs
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.csproj.CoreCompileInputs.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/bin/Debug/net8.0/Jeu de point
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/bin/Debug/net8.0/Jeu de point.deps.json
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/bin/Debug/net8.0/Jeu de point.runtimeconfig.json
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/bin/Debug/net8.0/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/bin/Debug/net8.0/Jeu de point.pdb
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/refint/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.pdb
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/Jeu de point.genruntimeconfig.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu de point/obj/Debug/net8.0/ref/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Jeu de point
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Jeu de point.deps.json
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Jeu de point.runtimeconfig.json
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Jeu de point.pdb
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.GeneratedMSBuildEditorConfig.editorconfig
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.AssemblyInfoInputs.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.AssemblyInfo.cs
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.csproj.CoreCompileInputs.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/refint/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.pdb
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.genruntimeconfig.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/ref/Jeu de point.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/Npgsql.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/bin/Debug/net8.0/System.Diagnostics.DiagnosticSource.dll
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.csproj.AssemblyReference.cache
+/home/itu/L2/S4/Tahina_Projet/Csharp/Jeu/obj/Debug/net8.0/Jeu de point.csproj.CopyComplete
