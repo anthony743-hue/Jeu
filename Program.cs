@@ -16,35 +16,49 @@ namespace JeuDePoints
         private GameEngine engine;
         private Panel gamePanel;
 
-        private int laserX = -1; // Coordonnée X de l'impact (-1 = pas de laser)
-        private int laserY = -1; // Coordonnée Y (la ligne du canon)
-        private Timer laserTimer; // Le minuteur pour effacer le laser
-        private int laserSide = 1; // 1 = Gauche (Joueur Bleu), -1 = Droite (Joueur Rouge)
+        private int laserX = -1; 
+        private int laserY = -1; 
+        private Timer laserTimer; 
+        private int laserSide = 1; 
         private Label lblStatus;
-        private int cellSize = 30, canonRow = 0;
+        private int cellSize = 30;
 
-        public GameForm()
+        // Constructeur acceptant les dimensions choisies
+        public GameForm(int width, int height)
         {
             this.Text = "Points & Canon - Final";
             this.Size = new Size(1000, 850);
             this.DoubleBuffered = true;
-            laserTimer = new Timer { Interval = 200 }; // SANS CECI -> CRASH
-            laserTimer.Tick += (s, e) => { /* ... */ };
-            InitGame();
+            
+            laserTimer = new Timer { Interval = 200 };
+            laserTimer.Tick += (s, e) => { 
+                laserX = -1; 
+                gamePanel.Invalidate(); 
+                laserTimer.Stop(); 
+            };
+
+            InitGame(width, height);
         }
 
-        private void InitGame()
+        private void InitGame(int w, int h)
         {
             Player[] ps = { new Player("Bleu"), new Player("Rouge") };
-            engine = new GameEngine(ps, 15, 15);
+            engine = new GameEngine(ps, w, h);
 
             lblStatus = new Label { Dock = DockStyle.Top, Height = 40, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Arial", 12, FontStyle.Bold), BackColor = Color.Gainsboro };
             gamePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
 
             gamePanel.Paint += (s, e) => Render(e.Graphics);
+            
             gamePanel.MouseDoubleClick += (s, e) =>
             {
-                int x = (e.X - 40 + cellSize / 2) / cellSize, y = (e.Y - 40 + cellSize / 2) / cellSize;
+                // Calcul des offsets dynamiques pour le clic
+                int offsetX = (gamePanel.Width - (engine.DEFAULT_WIDTH - 1) * cellSize) / 2;
+                int offsetY = (gamePanel.Height - (engine.DEFAULT_HEIGTH - 1) * cellSize) / 2;
+
+                int x = (int)Math.Round((float)(e.X - offsetX) / cellSize);
+                int y = (int)Math.Round((float)(e.Y - offsetY) / cellSize);
+
                 if (engine.isSecure(x, y) && engine.matrix[y][x] == -1)
                 {
                     GamePoint p = new GamePoint(x, y);
@@ -67,13 +81,11 @@ namespace JeuDePoints
         {
             int currentPlayer = engine.indexPlayer;
 
-            // Déplacement du canon du joueur actuel
             if (e.KeyCode == Keys.Up && engine.canonRows[currentPlayer] > 0)
                 engine.canonRows[currentPlayer]--;
             if (e.KeyCode == Keys.Down && engine.canonRows[currentPlayer] < engine.DEFAULT_HEIGTH - 1)
                 engine.canonRows[currentPlayer]++;
 
-            // Tir (uniquement avec Ctrl + Chiffre)
             if (e.Control)
             {
                 int pwr = -1;
@@ -84,7 +96,6 @@ namespace JeuDePoints
                 {
                     laserSide = (currentPlayer == 0) ? 1 : -1;
                     laserX = engine.fireCanon(pwr);
-
                     laserY = engine.canonRows[currentPlayer];
                     laserTimer.Start();
                     engine.nextPlayer();
@@ -102,12 +113,19 @@ namespace JeuDePoints
         private void Render(Graphics g)
         {
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            int offset = 40;
+
+            // CALCUL DU CENTRAGE
+            int gridWidthPx = (engine.DEFAULT_WIDTH - 1) * cellSize;
+            int gridHeightPx = (engine.DEFAULT_HEIGTH - 1) * cellSize;
+            int offsetX = (gamePanel.Width - gridWidthPx) / 2;
+            int offsetY = (gamePanel.Height - gridHeightPx) / 2;
 
             // Grille
             Pen pGrid = new Pen(Color.Gainsboro, 1);
-            for (int i = 0; i < engine.DEFAULT_WIDTH; i++) g.DrawLine(pGrid, offset + i * cellSize, offset, offset + i * cellSize, offset + (engine.DEFAULT_HEIGTH - 1) * cellSize);
-            for (int j = 0; j < engine.DEFAULT_HEIGTH; j++) g.DrawLine(pGrid, offset, offset + j * cellSize, offset + (engine.DEFAULT_WIDTH - 1) * cellSize, offset + j * cellSize);
+            for (int i = 0; i < engine.DEFAULT_WIDTH; i++) 
+                g.DrawLine(pGrid, offsetX + i * cellSize, offsetY, offsetX + i * cellSize, offsetY + gridHeightPx);
+            for (int j = 0; j < engine.DEFAULT_HEIGTH; j++) 
+                g.DrawLine(pGrid, offsetX, offsetY + j * cellSize, offsetX + gridWidthPx, offsetY + j * cellSize);
 
             // Lignes de score
             foreach (KeyValuePair<int, List<Tuple<GamePoint, GamePoint>>> entree in engine.ActivesLines)
@@ -115,7 +133,7 @@ namespace JeuDePoints
                 foreach (var line in entree.Value)
                 {
                     Pen pLine = new Pen((entree.Key == 0) ? Color.Blue : Color.Red, 3);
-                    g.DrawLine(pLine, offset + line.Item1.X * cellSize, offset + line.Item1.Y * cellSize, offset + line.Item2.X * cellSize, offset + line.Item2.Y * cellSize);
+                    g.DrawLine(pLine, offsetX + line.Item1.X * cellSize, offsetY + line.Item1.Y * cellSize, offsetX + line.Item2.X * cellSize, offsetY + line.Item2.Y * cellSize);
                 }
             }
 
@@ -127,27 +145,30 @@ namespace JeuDePoints
                     if (engine.matrix[y][x] != -1)
                     {
                         Brush br = (engine.matrix[y][x] == 0) ? Brushes.Blue : Brushes.Red;
-                        if (engine.colored[y][x]) g.DrawEllipse(new Pen(Color.Gold, 2), offset + x * cellSize - 9, offset + y * cellSize - 9, 18, 18);
-                        g.FillEllipse(br, offset + x * cellSize - 7, offset + y * cellSize - 7, 14, 14);
+                        if (engine.colored[y][x]) 
+                            g.DrawEllipse(new Pen(Color.Gold, 2), offsetX + x * cellSize - 9, offsetY + y * cellSize - 9, 18, 18);
+                        g.FillEllipse(br, offsetX + x * cellSize - 7, offsetY + y * cellSize - 7, 14, 14);
                     }
                 }
             }
-            int gridRight = offset + (engine.DEFAULT_WIDTH - 1) * cellSize;
+
+            // Canons
+            int gridRight = offsetX + gridWidthPx;
             Brush brushBleu = (engine.indexPlayer == 0) ? Brushes.Blue : Brushes.LightSkyBlue;
-            g.FillRectangle(brushBleu, 5, offset + engine.canonRows[0] * cellSize - 8, 20, 16);
+            g.FillRectangle(brushBleu, offsetX - 30, offsetY + engine.canonRows[0] * cellSize - 8, 20, 16);
 
             Brush brushRouge = (engine.indexPlayer == 1) ? Brushes.Red : Brushes.LightPink;
-            g.FillRectangle(brushRouge, gridRight + 15, offset + engine.canonRows[1] * cellSize - 8, 20, 16);
+            g.FillRectangle(brushRouge, gridRight + 10, offsetY + engine.canonRows[1] * cellSize - 8, 20, 16);
+
+            // Laser
             if (laserX != -1)
             {
                 Pen laserPen = new Pen(Color.OrangeRed, 4);
-                int startX = (laserSide == 1) ? 25 : (offset + (engine.DEFAULT_WIDTH - 1) * cellSize + 15);
-
-                int endX = offset + laserX * cellSize;
-                int y = offset + laserY * cellSize;
+                int startX = (laserSide == 1) ? offsetX - 15 : gridRight + 15;
+                int endX = offsetX + laserX * cellSize;
+                int y = offsetY + laserY * cellSize;
 
                 g.DrawLine(laserPen, startX, y, endX, y);
-                laserX = -1;
             }
         }
 
@@ -155,7 +176,13 @@ namespace JeuDePoints
         public static void Main()
         {
             Application.EnableVisualStyles();
-            Application.Run(new GameForm());
+            
+            // Lancement de la config avant le jeu
+            affichage.ConfigForm config = new affichage.ConfigForm();
+            if (config.ShowDialog() == DialogResult.OK)
+            {
+                Application.Run(new GameForm(config.SelectedWidth, config.SelectedHeight));
+            }
         }
     }
 }
