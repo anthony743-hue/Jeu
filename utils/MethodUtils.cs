@@ -1,10 +1,11 @@
+using System;
+
 namespace utils
 {
     class MethodUtils
     {
         public static int[] getCoords(int x1, int y1, int x2, int y2)
         {
-            int[] coords = new int[2];
             int a = (y2 - y1) / (x2 - x1);
             int b = y1 - a * x1;
             return new int[] { a, b };
@@ -29,6 +30,10 @@ namespace utils
 
             if (val == 0) return 0;     // Colinéaires
             return (val > 0) ? 1 : 2;  // 1: Horaire, 2: Anti-horaire
+        }
+
+        public static double getDistance(Point p1, Point p2) {
+            return Math.Sqrt(Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2));
         }
     }
 }

@@ -10,6 +10,10 @@ namespace models
         {
             listePoints = new List<Point>();
         }
+        public Player(string s)
+        {
+            this.PlayerName = s;
+        }
         public int PlayerID { get; set; }
         public string PlayerName { get; set; }
         public DateTime RegistrationDate { get; set; }
