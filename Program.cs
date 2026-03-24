@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using models;
 using utils;
 using entity;
+using System.Collections.Generic;
 
 using GdiPoint = System.Drawing.Point;
 using GamePoint = utils.Point;
@@ -18,6 +19,7 @@ namespace JeuDePoints
         private int laserX = -1; // Coordonnée X de l'impact (-1 = pas de laser)
         private int laserY = -1; // Coordonnée Y (la ligne du canon)
         private Timer laserTimer; // Le minuteur pour effacer le laser
+        private int laserSide = 1; // 1 = Gauche (Joueur Bleu), -1 = Droite (Joueur Rouge)
         private Label lblStatus;
         private int cellSize = 30, canonRow = 0;
 
@@ -26,6 +28,8 @@ namespace JeuDePoints
             this.Text = "Points & Canon - Final";
             this.Size = new Size(1000, 850);
             this.DoubleBuffered = true;
+            laserTimer = new Timer { Interval = 200 }; // SANS CECI -> CRASH
+            laserTimer.Tick += (s, e) => { /* ... */ };
             InitGame();
         }
 
@@ -61,9 +65,15 @@ namespace JeuDePoints
 
         private void OnKeyDown(object s, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Up && canonRow > 0) canonRow--;
-            if (e.KeyCode == Keys.Down && canonRow < engine.DEFAULT_HEIGTH - 1) canonRow++;
+            int currentPlayer = engine.indexPlayer;
 
+            // Déplacement du canon du joueur actuel
+            if (e.KeyCode == Keys.Up && engine.canonRows[currentPlayer] > 0)
+                engine.canonRows[currentPlayer]--;
+            if (e.KeyCode == Keys.Down && engine.canonRows[currentPlayer] < engine.DEFAULT_HEIGTH - 1)
+                engine.canonRows[currentPlayer]++;
+
+            // Tir (uniquement avec Ctrl + Chiffre)
             if (e.Control)
             {
                 int pwr = -1;
@@ -72,18 +82,13 @@ namespace JeuDePoints
 
                 if (pwr != -1)
                 {
-                    int hitX = engine.fireCanon(canonRow, pwr);
+                    laserSide = (currentPlayer == 0) ? 1 : -1;
+                    laserX = engine.fireCanon(pwr);
 
-                    // Calcul de la destination visuelle même si on rate
-                    int targetX = (int)Math.Round((pwr - 1) * (engine.DEFAULT_WIDTH - 1) / 8.0);
-
-                    laserY = canonRow;
-                    laserX = targetX;
+                    laserY = engine.canonRows[currentPlayer];
                     laserTimer.Start();
-
                     engine.nextPlayer();
                     UpdateStatus();
-                    gamePanel.Invalidate();
                 }
             }
             gamePanel.Invalidate();
@@ -105,10 +110,13 @@ namespace JeuDePoints
             for (int j = 0; j < engine.DEFAULT_HEIGTH; j++) g.DrawLine(pGrid, offset, offset + j * cellSize, offset + (engine.DEFAULT_WIDTH - 1) * cellSize, offset + j * cellSize);
 
             // Lignes de score
-            foreach (var line in engine.ActiveLines)
+            foreach (KeyValuePair<int, List<Tuple<GamePoint, GamePoint>>> entree in engine.ActivesLines)
             {
-                Pen pLine = new Pen((line.Item3 == 0) ? Color.Blue : Color.Red, 3);
-                g.DrawLine(pLine, offset + line.Item1.X * cellSize, offset + line.Item1.Y * cellSize, offset + line.Item2.X * cellSize, offset + line.Item2.Y * cellSize);
+                foreach (var line in entree.Value)
+                {
+                    Pen pLine = new Pen((entree.Key == 0) ? Color.Blue : Color.Red, 3);
+                    g.DrawLine(pLine, offset + line.Item1.X * cellSize, offset + line.Item1.Y * cellSize, offset + line.Item2.X * cellSize, offset + line.Item2.Y * cellSize);
+                }
             }
 
             // Points
@@ -124,9 +132,30 @@ namespace JeuDePoints
                     }
                 }
             }
-            g.FillRectangle(Brushes.Black, 5, offset + canonRow * cellSize - 8, 20, 16);
+            int gridRight = offset + (engine.DEFAULT_WIDTH - 1) * cellSize;
+            Brush brushBleu = (engine.indexPlayer == 0) ? Brushes.Blue : Brushes.LightSkyBlue;
+            g.FillRectangle(brushBleu, 5, offset + engine.canonRows[0] * cellSize - 8, 20, 16);
+
+            Brush brushRouge = (engine.indexPlayer == 1) ? Brushes.Red : Brushes.LightPink;
+            g.FillRectangle(brushRouge, gridRight + 15, offset + engine.canonRows[1] * cellSize - 8, 20, 16);
+            if (laserX != -1)
+            {
+                Pen laserPen = new Pen(Color.OrangeRed, 4);
+                int startX = (laserSide == 1) ? 25 : (offset + (engine.DEFAULT_WIDTH - 1) * cellSize + 15);
+
+                int endX = offset + laserX * cellSize;
+                int y = offset + laserY * cellSize;
+
+                g.DrawLine(laserPen, startX, y, endX, y);
+                laserX = -1;
+            }
         }
 
-        [STAThread] public static void Main() { Application.EnableVisualStyles(); Application.Run(new GameForm()); }
+        [STAThread]
+        public static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.Run(new GameForm());
+        }
     }
 }
