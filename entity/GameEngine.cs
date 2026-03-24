@@ -9,6 +9,8 @@ namespace entity
     {
         public int DEFAULT_WIDTH { get; set; }
         public int DEFAULT_HEIGTH { get; set; }
+        public int MAX_POWER { get; set; } = 9;
+        public int MIN_POWER { get; set; } = 1;
         public int[][] matrix { get; set; }
         public bool[][] colored;
         public Player[] joueurs { get; set; } = new Player[2];
@@ -109,15 +111,18 @@ namespace entity
 
         public bool isSecure(int x, int y) => x >= 0 && x < DEFAULT_WIDTH && y >= 0 && y < DEFAULT_HEIGTH;
 
-        public void fireCanon(int row, int power)
+        public int fireCanon(int row, int power)
         {
-            for (int x = 0; x < Math.Min(DEFAULT_WIDTH, power * 3); x++)
+            int range = (int)Math.Round((power - 1) * (DEFAULT_WIDTH - 1) / 8.0);
+            if (matrix[row][range] != -1 && matrix[row][range] != indexPlayer)
             {
-                if (matrix[row][x] != -1 && matrix[row][x] != indexPlayer && !colored[row][x])
+                if (!colored[row][range])
                 {
-                    matrix[row][x] = -1; break;
+                    matrix[row][range] = -1; 
+                    return range; 
                 }
             }
+            return -1; // Aucun point touché
         }
     }
 }
