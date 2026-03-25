@@ -55,10 +55,10 @@ C'est le principe de **NORMALISATION**.
 │ GameParty                               │
 │ ├─ GamePartyID                          │
 │ ├─ GamePartyName                        │
-│ ├─ Player1Name : "Alice"   ← PROBLÈME! │
-│ ├─ Player2Name : "Bob"     ← PROBLÈME! │
-│ ├─ Player1Score : 50       ← PROBLÈME! │
-│ └─ Player2Score : 30       ← PROBLÈME! │
+│ ├─ Player1Name : "Alice"   ← PROBLÈME!  │
+│ ├─ Player2Name : "Bob"     ← PROBLÈME!  │
+│ ├─ Player1Score : 50       ← PROBLÈME!  │
+│ └─ Player2Score : 30       ← PROBLÈME!  │
 └─────────────────────────────────────────┘
 
 Pourquoi c'est mauvais?

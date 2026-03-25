@@ -279,3 +279,5 @@ ___
 5. Commencer par les **classes métier** (Models)
 
 Bonne chance ! 🎮✨
+
+mcs -pkg:dotnet models/*.cs utils/*.cs entity/*.cs affichage/*.cs Program.cs -out:JeuFinal.exe
