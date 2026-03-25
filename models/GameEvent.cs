@@ -11,6 +11,6 @@ namespace models
         public int DetailTypeID { get; set; }
         public Point PositionA { get; set; }
         public Point PositionB { get; set; }
-        public DateTime AddedDate { get; set; }
+        public DateTime AddedDate { get; set; } 
     }
 }

@@ -2,6 +2,7 @@ using models;
 using utils;
 using System.Collections.Generic;
 using System;
+using models;
 
 namespace entity
 {
@@ -22,7 +23,6 @@ namespace entity
         private static readonly int[,] Directions = new int[,]{
             { -1,  0 }, { 0, -1 }, { -1, -1 }, { -1,  1 }
         };
-
         public GameEngine(Player[] ls, int w, int h)
         {
             DEFAULT_WIDTH = w;
@@ -31,14 +31,11 @@ namespace entity
             scores = new int[DEFAULT_NB_PLAYER];
             canonRows = new int[DEFAULT_NB_PLAYER];
             ActivesLines = new Dictionary<int, List<Tuple<Point, Point>>>();
-            matrix = new int[h][];
-            colored = new bool[h][];
-            for (int i = 0; i < h; i++)
-            {
-                matrix[i] = new int[w];
-                colored[i] = new bool[w];
-                for (int j = 0; j < w; j++) matrix[i][j] = -1;
-            }
+            initPlateau(w, h);
+        }
+        public GameEngine(Game game)
+        {
+
         }
 
         public void addPoint(Point p)
@@ -62,59 +59,13 @@ namespace entity
                 if (nbPas >= 4)
                 {
                     scores[indexPlayer] += (nbPas - 4 + 1);
-                    if( ! ActivesLines.ContainsKey(indexPlayer))
+                    if (!ActivesLines.ContainsKey(indexPlayer))
                     {
                         ActivesLines.Add(indexPlayer, new List<Tuple<Point, Point>>());
                     }
                     ActivesLines[indexPlayer].Add(new Tuple<Point, Point>(new Point(pt1.X, pt1.Y), new Point(pt2.X, pt2.Y)));
                     MarkColored(pt1, pt2);
                 }
-            }
-        }
-
-        private bool isObstructed(Point pt1, Point pt2)
-        {
-            foreach (KeyValuePair<int, List<Tuple<Point, Point>>> entree in ActivesLines)
-            {
-                if (entree.Key != indexPlayer)
-                {
-                    foreach (var line in entree.Value)
-                    {
-                        if (MethodUtils.AreSegmentsIntersecting(pt1, pt2, line.Item1, line.Item2))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        private void MarkColored(Point p1, Point p2)
-        {
-            int steps = (int)Math.Max(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y));
-            int x = 0, y = 0;
-            float t = 0;
-            for (int i = 0; i <= steps; i++)
-            {
-                t = (steps == 0) ? 0 : (float)i / steps;
-                x = (int)Math.Round(p1.X + t * (p2.X - p1.X));
-                y = (int)Math.Round(p1.Y + t * (p2.Y - p1.Y));
-                if (isSecure(x, y)) colored[y][x] = true;
-            }
-        }
-
-        private void getScoreInLine(Point p, int PosX, int PosY, int PlusX, int PlusY)
-        {
-            p.X = PosX; p.Y = PosY;
-            int nX = 0, nY = 0;
-            Point pt2 = new Point();
-            while (true)
-            {
-                nX = p.X + PlusX; nY = p.Y + PlusY;
-                pt2.X = nX; pt2.Y = nY;
-                if (!isSecure(nX, nY) || matrix[nY][nX] != indexPlayer || isObstructed(p, pt2)) break;
-                p.X = nX; p.Y = nY;
             }
         }
 
@@ -140,6 +91,60 @@ namespace entity
                 }
             }
             return -1;
+        }
+        private bool isObstructed(Point pt1, Point pt2)
+        {
+            foreach (KeyValuePair<int, List<Tuple<Point, Point>>> entree in ActivesLines)
+            {
+                if (entree.Key != indexPlayer)
+                {
+                    foreach (var line in entree.Value)
+                    {
+                        if (MethodUtils.AreSegmentsIntersecting(pt1, pt2, line.Item1, line.Item2))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        private void MarkColored(Point p1, Point p2)
+        {
+            int steps = (int)Math.Max(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y));
+            int x = 0, y = 0;
+            float t = 0;
+            for (int i = 0; i <= steps; i++)
+            {
+                t = (steps == 0) ? 0 : (float)i / steps;
+                x = (int)Math.Round(p1.X + t * (p2.X - p1.X));
+                y = (int)Math.Round(p1.Y + t * (p2.Y - p1.Y));
+                if (isSecure(x, y)) colored[y][x] = true;
+            }
+        }
+        private void getScoreInLine(Point p, int PosX, int PosY, int PlusX, int PlusY)
+        {
+            p.X = PosX; p.Y = PosY;
+            int nX = 0, nY = 0;
+            Point pt2 = new Point();
+            while (true)
+            {
+                nX = p.X + PlusX; nY = p.Y + PlusY;
+                pt2.X = nX; pt2.Y = nY;
+                if (!isSecure(nX, nY) || matrix[nY][nX] != indexPlayer || isObstructed(p, pt2)) break;
+                p.X = nX; p.Y = nY;
+            }
+        }
+        private void initPlateau(int w, int h)
+        {
+            matrix = new int[h][];
+            colored = new bool[h][];
+            for (int i = 0; i < h; i++)
+            {
+                matrix[i] = new int[w];
+                colored[i] = new bool[w];
+                for (int j = 0; j < w; j++) matrix[i][j] = -1;
+            }
         }
     }
 }
