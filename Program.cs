@@ -14,6 +14,7 @@ namespace JeuDePoints
     public class GameForm : Form
     {
         private GameEngine engine;
+        private Game jeu;
         private Panel gamePanel;
 
         private int laserX = -1; 
@@ -36,11 +37,11 @@ namespace JeuDePoints
                 gamePanel.Invalidate(); 
                 laserTimer.Stop(); 
             };
-
+            jeu = new Game();
             InitGame(width, height);
         }
 
-        private void InitGame(int w, int h)
+        private unsafe void InitGame(int w, int h)
         {
             Player[] ps = { new Player("Bleu"), new Player("Rouge") };
             engine = new GameEngine(ps, w, h);
@@ -52,7 +53,6 @@ namespace JeuDePoints
             
             gamePanel.MouseDoubleClick += (s, e) =>
             {
-                // Calcul des offsets dynamiques pour le clic
                 int offsetX = (gamePanel.Width - (engine.DEFAULT_WIDTH - 1) * cellSize) / 2;
                 int offsetY = (gamePanel.Height - (engine.DEFAULT_HEIGTH - 1) * cellSize) / 2;
 
@@ -61,12 +61,31 @@ namespace JeuDePoints
 
                 if (engine.isSecure(x, y) && engine.matrix[y][x] == -1)
                 {
-                    GamePoint p = new GamePoint(x, y);
-                    engine.addPoint(p);
-                    engine.ifScoring(p);
-                    engine.nextPlayer();
-                    UpdateStatus();
-                    gamePanel.Invalidate();
+                    try{
+                        int ActualPlayer = engine.indexPlayer;
+                        GamePoint p = new GamePoint(x, y);
+                        engine.addPoint(p);
+                        jeu.AddEvent(p, "placepoint", ActualPlayer);
+                        if( !engine.ActivesLines.ContainsKey(ActualPlayer) ){
+                            engine.ActivesLines.Add(ActualPlayer,new List<Tuple<GamePoint, GamePoint, bool>>());
+                        }
+                        int lastSize = engine.ActivesLines[ActualPlayer].Count;
+                        engine.ifScoring(p);
+                        int newSize = engine.ActivesLines[ActualPlayer].Count;
+                        if( newSize > lastSize ){
+                            List<Tuple<GamePoint, GamePoint, bool>> ls = engine.ActivesLines[ActualPlayer];
+                            for(int i=lastSize; i < newSize; i++){
+                                if( ls[i].Item3 ){
+                                    jeu.AddEvent(ls[i].Item1, ls[i].Item2, ActualPlayer);
+                                }
+                            } 
+                        }
+                        engine.nextPlayer();
+                        UpdateStatus();
+                        gamePanel.Invalidate();
+                    }catch(Exception exception){
+                        Console.WriteLine(exception.Message);
+                    }
                 }
             };
 
@@ -96,7 +115,13 @@ namespace JeuDePoints
                 {
                     laserSide = (currentPlayer == 0) ? 1 : -1;
                     laserX = engine.fireCanon(pwr);
-                    laserY = engine.canonRows[currentPlayer];
+                    int row = engine.canonRows[currentPlayer];
+                    if( laserX != -1 ){
+                        jeu.AddEvent(new GamePoint(laserX, row), "ShotSuccess", currentPlayer);
+                    } else {
+                        jeu.AddEvent(new GamePoint(0, row), "ShotMiss", currentPlayer);                        
+                    }
+                    laserY = row;
                     laserTimer.Start();
                     engine.nextPlayer();
                     UpdateStatus();
@@ -128,12 +153,14 @@ namespace JeuDePoints
                 g.DrawLine(pGrid, offsetX, offsetY + j * cellSize, offsetX + gridWidthPx, offsetY + j * cellSize);
 
             // Lignes de score
-            foreach (KeyValuePair<int, List<Tuple<GamePoint, GamePoint>>> entree in engine.ActivesLines)
+            foreach (KeyValuePair<int, List<Tuple<GamePoint, GamePoint, bool>>> entree in engine.ActivesLines)
             {
                 foreach (var line in entree.Value)
                 {
-                    Pen pLine = new Pen((entree.Key == 0) ? Color.Blue : Color.Red, 3);
-                    g.DrawLine(pLine, offsetX + line.Item1.X * cellSize, offsetY + line.Item1.Y * cellSize, offsetX + line.Item2.X * cellSize, offsetY + line.Item2.Y * cellSize);
+                    if( line.Item3 ){
+                        Pen pLine = new Pen((entree.Key == 0) ? Color.Blue : Color.Red, 3);
+                        g.DrawLine(pLine, offsetX + line.Item1.X * cellSize, offsetY + line.Item1.Y * cellSize, offsetX + line.Item2.X * cellSize, offsetY + line.Item2.Y * cellSize);
+                    }
                 }
             }
 

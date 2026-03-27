@@ -2,7 +2,6 @@ using models;
 using utils;
 using System.Collections.Generic;
 using System;
-using models;
 
 namespace entity
 {
@@ -19,23 +18,22 @@ namespace entity
         public int[] scores { get; }
         public int indexPlayer { get; set; } = 0;
         public int[] canonRows { get; set; }
-        public Dictionary<int, List<Tuple<Point, Point>>> ActivesLines;
+        public Dictionary<int, List<Tuple<Point, Point, bool>>> ActivesLines;
         private static readonly int[,] Directions = new int[,]{
             { -1,  0 }, { 0, -1 }, { -1, -1 }, { -1,  1 }
         };
         public GameEngine(Player[] ls, int w, int h)
         {
-            DEFAULT_WIDTH = w;
-            DEFAULT_HEIGTH = h;
             joueurs = ls;
             scores = new int[DEFAULT_NB_PLAYER];
             canonRows = new int[DEFAULT_NB_PLAYER];
-            ActivesLines = new Dictionary<int, List<Tuple<Point, Point>>>();
+            ActivesLines = new Dictionary<int, List<Tuple<Point, Point, bool>>>();
             initPlateau(w, h);
         }
         public GameEngine(Game game)
         {
-
+            GameConfig config = game.config;
+            initPlateau(config.BoardDimensionM, config.BoardDimensionM);
         }
 
         public void addPoint(Point p)
@@ -45,27 +43,31 @@ namespace entity
 
         public void nextPlayer() { indexPlayer = (indexPlayer + 1) % DEFAULT_NB_PLAYER; }
 
-        public void ifScoring(Point p)
+        public unsafe void ifScoring(Point p)
         {
             int deltaX = 0, deltaY = 0, nbPas = 0;
             Point pt1 = new Point(), pt2 = new Point();
+            int color = 0;
+            
             for (int i = 0; i < Directions.GetLength(0); i++)
             {
-                getScoreInLine(pt1, p.X, p.Y, Directions[i, 1], Directions[i, 0]);
-                getScoreInLine(pt2, p.X, p.Y, -Directions[i, 1], -Directions[i, 0]);
+                getScoreInLine(pt1, p.X, p.Y, Directions[i, 1], Directions[i, 0], &color);
+                getScoreInLine(pt2, p.X, p.Y, -Directions[i, 1], -Directions[i, 0], &color);
                 deltaX = Math.Abs(pt2.X - pt1.X);
                 deltaY = Math.Abs(pt2.Y - pt1.Y);
                 nbPas = Math.Max(deltaX, deltaY);
                 if (nbPas >= 4)
                 {
-                    scores[indexPlayer] += (nbPas - 4 + 1);
+                    int score = ( color >= 5 ) ? 1 : nbPas - 4 + 1;
+                    scores[indexPlayer] += score;
                     if (!ActivesLines.ContainsKey(indexPlayer))
                     {
-                        ActivesLines.Add(indexPlayer, new List<Tuple<Point, Point>>());
+                        ActivesLines.Add(indexPlayer, new List<Tuple<Point, Point, bool>>());
                     }
-                    ActivesLines[indexPlayer].Add(new Tuple<Point, Point>(new Point(pt1.X, pt1.Y), new Point(pt2.X, pt2.Y)));
+                    ActivesLines[indexPlayer].Add(new Tuple<Point, Point, bool>(new Point(pt1.X, pt1.Y), new Point(pt2.X, pt2.Y), true));
                     MarkColored(pt1, pt2);
                 }
+                color = 0;
             }
         }
 
@@ -94,13 +96,13 @@ namespace entity
         }
         private bool isObstructed(Point pt1, Point pt2)
         {
-            foreach (KeyValuePair<int, List<Tuple<Point, Point>>> entree in ActivesLines)
+            foreach (KeyValuePair<int, List<Tuple<Point, Point, bool>>> entree in ActivesLines)
             {
                 if (entree.Key != indexPlayer)
                 {
                     foreach (var line in entree.Value)
                     {
-                        if (MethodUtils.AreSegmentsIntersecting(pt1, pt2, line.Item1, line.Item2))
+                        if ( line.Item3 && MethodUtils.AreSegmentsIntersecting(pt1, pt2, line.Item1, line.Item2))
                         {
                             return true;
                         }
@@ -122,7 +124,7 @@ namespace entity
                 if (isSecure(x, y)) colored[y][x] = true;
             }
         }
-        private void getScoreInLine(Point p, int PosX, int PosY, int PlusX, int PlusY)
+        private unsafe void getScoreInLine(Point p, int PosX, int PosY, int PlusX, int PlusY, int* color)
         {
             p.X = PosX; p.Y = PosY;
             int nX = 0, nY = 0;
@@ -132,11 +134,14 @@ namespace entity
                 nX = p.X + PlusX; nY = p.Y + PlusY;
                 pt2.X = nX; pt2.Y = nY;
                 if (!isSecure(nX, nY) || matrix[nY][nX] != indexPlayer || isObstructed(p, pt2)) break;
+                if( colored[nY][nX] ) (*color)++;
                 p.X = nX; p.Y = nY;
             }
         }
         private void initPlateau(int w, int h)
         {
+            DEFAULT_WIDTH = w;
+            DEFAULT_HEIGTH = h;
             matrix = new int[h][];
             colored = new bool[h][];
             for (int i = 0; i < h; i++)
